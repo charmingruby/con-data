@@ -3,8 +3,8 @@ defmodule Sendex.Email.Sender do
 
   @delay_in_seconds 1
 
-  def send_email("dummy_3@email.com" = email),
-    do: raise("Oops, couldn't send email to '#{email}'")
+  def send_email("dummy_3@email.com"),
+    do: :error
 
   def send_email(email) do
     delay = @delay_in_seconds * 1000
