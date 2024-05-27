@@ -1,6 +1,7 @@
 defmodule Jobbex.Jobs.Job do
   alias Jobbex.Jobs.Job
-  use GenServer
+
+  use GenServer, restart: :transient
 
   require Logger
 
@@ -9,8 +10,8 @@ defmodule Jobbex.Jobs.Job do
   # -
   # Client
   # -
-  def start_link(state) do
-    GenServer.start_link(__MODULE__, state, name: __MODULE__)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   # -

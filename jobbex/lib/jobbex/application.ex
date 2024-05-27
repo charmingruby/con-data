@@ -1,19 +1,21 @@
 defmodule Jobbex.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
 
   @impl true
   def start(_type, _args) do
-    children = [
-      # Starts a worker by calling: Jobbex.Worker.start_link(arg)
-      # {Jobbex.Worker, arg}
+    job_runner_config = [
+      name: Jobbex.JobRunner,
+      strategy: :one_for_one,
+      max_seconds: 30_000
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
+    children = [
+      {Registry, keys: :unique, name: Jobbex.JobRegistry},
+      {DynamicSupervisor, job_runner_config}
+    ]
+
     opts = [strategy: :one_for_one, name: Jobbex.Supervisor]
     Supervisor.start_link(children, opts)
   end

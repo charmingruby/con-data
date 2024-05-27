@@ -1,18 +1,12 @@
 defmodule Jobbex do
-  @moduledoc """
-  Documentation for `Jobbex`.
-  """
+  @moduledoc false
+  alias Jobbex.JobRunner
+  alias Jobbex.Jobs.JobSupervisor
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Jobbex.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  def start_job(args),
+    do:
+      DynamicSupervisor.start_child(
+        JobRunner,
+        {JobSupervisor, args}
+      )
 end
