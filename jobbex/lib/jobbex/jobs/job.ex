@@ -11,7 +11,17 @@ defmodule Jobbex.Jobs.Job do
   # Client
   # -
   def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: __MODULE__)
+    args =
+      if Keyword.has_key?(args, :id) do
+        args
+      else
+        Keyword.put(args, :id, random_job_id())
+      end
+
+    id = Keyword.get(args, :id)
+    type = Keyword.get(args, :type)
+
+    GenServer.start_link(__MODULE__, args, name: via(id, type))
   end
 
   # -
@@ -19,7 +29,7 @@ defmodule Jobbex.Jobs.Job do
   # -
   def init(args) do
     work = Keyword.fetch!(args, :work)
-    id = Keyword.get(args, :id, random_job_id())
+    id = Keyword.get(args, :id)
     max_retries = Keyword.get(args, :max_retries, 3)
 
     state = %Job{id: id, work: work, max_retries: max_retries}
@@ -67,6 +77,17 @@ defmodule Jobbex.Jobs.Job do
     else
       new_state
     end
+  end
+
+  def running_imports() do
+    match_all = {:"$1", :"$2", :"$3"}
+    guards = [{:==, :"$3", "import"}]
+    map_result = [%{id: :"$1", pid: :"$2", type: :"$3"}]
+    Registry.select(Jobbex.JobRegistry, [{match_all, guards, map_result}])
+  end
+
+  defp via(key, value) do
+    {:via, Registry, {Jobbex.JobRegistry, key, value}}
   end
 
   defp random_job_id() do
